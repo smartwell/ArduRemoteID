@@ -1,7 +1,7 @@
 name: Build ArduRemoteID ESP32-S3 (LOCK_LEVEL=0)
 
 on:
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ardupilot/ardupilot-dev:latest
+      image: ghcr.io/ardupilot/ardupilot-dev:latest  # ← 关键修改在这里
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
