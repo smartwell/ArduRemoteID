@@ -1,4 +1,4 @@
-name: Build ArduRemoteID ESP32-S3 (LOCK_LEVEL=0)
+name: Build ArduRemoteID for ESP32-S3 (LOCK_LEVEL=0)
 
 on:
   workflow_dispatch:
@@ -7,33 +7,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Set LOCK_LEVEL=0
+      - name: Create local.parm for LOCK_LEVEL=0
         run: echo "LOCK_LEVEL 0" > local.parm
 
-      - name: Install dependencies
+      - name: Install ESP-IDF dependencies
         run: |
           sudo apt update
-          sudo apt install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util
+          sudo apt install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 
-      - name: Install ESP-IDF (required for ESP32-S3)
+      - name: Setup ESP-IDF v5.1.2
         run: |
           git clone -b v5.1.2 --recursive https://github.com/espressif/esp-idf.git
           cd esp-idf
           ./install.sh esp32s3
-          echo "IDF_PATH=$PWD" >> $GITHUB_ENV
+          echo "IDF_PATH=$(pwd)" >> $GITHUB_ENV
 
-      - name: Source ESP-IDF and build
+      - name: Build ArduRemoteID for ESP32-S3
         run: |
           source esp-idf/export.sh
           ./build.sh ESP32S3
 
-      - name: Upload firmware as artifact
+      - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: ESP32S3-firmware
+          name: ESP32S3-firmware-LOCK0
           path: build/ArduRemoteID_ESP32S3/firmware.bin
+          retention-days: 7
