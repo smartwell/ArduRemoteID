@@ -1,0 +1,27 @@
+name: Build ArduRemoteID ESP32-S3 (LOCK_LEVEL=0)
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ardupilot/ardupilot-dev:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set LOCK_LEVEL=0
+        run: echo "LOCK_LEVEL 0" > local.parm
+
+      - name: Build ESP32-S3 firmware
+        run: ./build.sh ESP32S3
+
+      - name: Upload firmware as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ESP32S3-firmware
+          path: build/ArduRemoteID_ESP32S3/firmware.bin
