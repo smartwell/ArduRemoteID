@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/ardupilot/ardupilot-dev:latest  # ← 关键修改在这里
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,8 +15,22 @@ jobs:
       - name: Set LOCK_LEVEL=0
         run: echo "LOCK_LEVEL 0" > local.parm
 
-      - name: Build ESP32-S3 firmware
-        run: ./build.sh ESP32S3
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util
+
+      - name: Install ESP-IDF (required for ESP32-S3)
+        run: |
+          git clone -b v5.1.2 --recursive https://github.com/espressif/esp-idf.git
+          cd esp-idf
+          ./install.sh esp32s3
+          echo "IDF_PATH=$PWD" >> $GITHUB_ENV
+
+      - name: Source ESP-IDF and build
+        run: |
+          source esp-idf/export.sh
+          ./build.sh ESP32S3
 
       - name: Upload firmware as artifact
         uses: actions/upload-artifact@v4
